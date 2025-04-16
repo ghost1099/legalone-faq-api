@@ -2,9 +2,7 @@ services:
   - type: web
     name: legalone-faq-api
     env: node
-    buildCommand: |
-      npm install
-      npx playwright install --with-deps
+    buildCommand: npm install
     startCommand: npm start
     plan: free
     envVars:
