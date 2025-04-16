@@ -1,31 +1,28 @@
 import express from 'express';
-import { chromium } from 'playwright';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get('/faqs', async (req, res) => {
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-  await page.goto('https://suporte.legalone.com.br/central/faces/central-solucoes-resultados.html', { waitUntil: 'networkidle' });
+  try {
+    const { data: html } = await axios.get('https://suporte.legalone.com.br/central/faces/central-solucoes-resultados.html');
+    const $ = cheerio.load(html);
+    const faqs = [];
 
-  await page.waitForTimeout(5000); // Aguarda carregamento do JS
-
-  const faqs = await page.evaluate(() => {
-    const entries = [];
-    const items = document.querySelectorAll('.resultado-pergunta');
-    items.forEach(item => {
-      const pergunta = item.querySelector('.pergunta')?.innerText.trim();
-      const resposta = item.querySelector('.resposta')?.innerText.trim();
+    $('.resultado-pergunta').each((_, el) => {
+      const pergunta = $(el).find('.pergunta').text().trim();
+      const resposta = $(el).find('.resposta').text().trim();
       if (pergunta && resposta) {
-        entries.push({ pergunta, resposta });
+        faqs.push({ pergunta, resposta });
       }
     });
-    return entries;
-  });
 
-  await browser.close();
-  res.json(faqs);
+    res.json(faqs);
+  } catch (error) {
+    res.status(500).json({ erro: 'Falha ao extrair FAQs', detalhes: error.message });
+  }
 });
 
 app.listen(PORT, () => {
