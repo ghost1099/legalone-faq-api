@@ -1,0 +1,27 @@
+openapi: 3.1.0
+info:
+  title: Legal One FAQ API (Scraper)
+  version: 1.0.0
+  description: Retorna perguntas e respostas em tempo real da Central de Ajuda do Legal One
+servers:
+  - url: https://legalone-faq-api.onrender.com
+paths:
+  /faqs:
+    get:
+      operationId: getFaqs
+      summary: Retorna perguntas e respostas em tempo real
+      responses:
+        '200':
+          description: Lista de FAQs em JSON
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pergunta:
+                      type: string
+                    resposta:
+                      type: string
+components: {}
